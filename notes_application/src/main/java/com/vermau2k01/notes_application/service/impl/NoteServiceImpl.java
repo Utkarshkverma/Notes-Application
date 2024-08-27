@@ -1,6 +1,5 @@
 package com.vermau2k01.notes_application.service.impl;
 
-
 import com.vermau2k01.notes_application.entity.Notes;
 import com.vermau2k01.notes_application.repository.NotesRepository;
 import com.vermau2k01.notes_application.service.NoteService;
