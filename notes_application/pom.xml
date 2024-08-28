@@ -12,7 +12,7 @@
 	<artifactId>notes_application</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>notes_application</name>
-	<description>Demo project for for notes application</description>
+	<description>Demo project for notes application</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -45,6 +45,21 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>0.12.5</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>0.12.5</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>0.12.5</version>
 		</dependency>
 
 		<dependency>

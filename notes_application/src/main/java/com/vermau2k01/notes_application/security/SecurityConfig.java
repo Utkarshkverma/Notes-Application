@@ -35,15 +35,14 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(req-> req
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .ignoringRequestMatchers("/auth/public/**"))
+                .authorizeHttpRequests(req -> req
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/csrf-token").permitAll()
-                        .anyRequest()
-                        .authenticated())
-                .csrf(AbstractHttpConfigurer::disable)
+                        .requestMatchers("/csrf").permitAll()
+                        .anyRequest().authenticated())
                 .formLogin(withDefaults())
                 .httpBasic(withDefaults());
 
