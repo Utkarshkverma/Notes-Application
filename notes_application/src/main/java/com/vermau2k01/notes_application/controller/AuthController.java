@@ -1,9 +1,6 @@
 package com.vermau2k01.notes_application.controller;
 
-import com.vermau2k01.notes_application.dto.LoginRequest;
-import com.vermau2k01.notes_application.dto.LoginResponse;
-import com.vermau2k01.notes_application.dto.MessageResponse;
-import com.vermau2k01.notes_application.dto.SignUpRequest;
+import com.vermau2k01.notes_application.dto.*;
 import com.vermau2k01.notes_application.entity.AppRole;
 import com.vermau2k01.notes_application.entity.Role;
 import com.vermau2k01.notes_application.entity.User;
@@ -19,18 +16,17 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth")
@@ -116,6 +112,41 @@ public class AuthController {
     }
 
 
+    @GetMapping("/user")
+    public ResponseEntity<?> getUser(@AuthenticationPrincipal UserDetails userDetails) {
+
+        User user = userRepository
+                .findByEmail(userDetails.getUsername())
+                .orElseThrow(()-> new RuntimeException("Error: User is not found."));
+
+
+
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+
+        UserInfoResponse userInfoResponse = new UserInfoResponse();
+        userInfoResponse.setEmail(user.getEmail());
+        userInfoResponse.setId(user.getUserId());
+        userInfoResponse.setUsername(user.getUserName());
+        userInfoResponse.setAccountNonLocked(user.isAccountNonLocked());
+        userInfoResponse.setAccountNonExpired(user.isAccountNonExpired());
+        userInfoResponse.setTwoFactorEnabled(user.isTwoFactorEnabled());
+        userInfoResponse.setRoles(roles);
+        userInfoResponse.setCredentialsNonExpired(user.isCredentialsNonExpired());
+        userInfoResponse.setEnabled(user.isEnabled());
+        userInfoResponse.setCredentialsExpiryDate(user.getCredentialsExpiryDate());
+        userInfoResponse.setAccountExpiryDate(user.getAccountExpiryDate());
+
+        return ResponseEntity.ok(userInfoResponse);
+
+    }
+
+    @GetMapping("/username")
+    public String currentUserName(@AuthenticationPrincipal UserDetails userDetails) {
+        return (userDetails != null) ? userDetails.getUsername() : "";
+    }
 
 
 }
