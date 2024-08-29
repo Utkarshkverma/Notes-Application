@@ -145,7 +145,11 @@ public class AuthController {
 
     @GetMapping("/username")
     public String currentUserName(@AuthenticationPrincipal UserDetails userDetails) {
-        return (userDetails != null) ? userDetails.getUsername() : "";
+        User user = userRepository
+                .findByEmail(userDetails.getUsername())
+                .orElseThrow(()-> new RuntimeException("Error: User is not found."));
+
+        return user.getUserName();
     }
 
 
