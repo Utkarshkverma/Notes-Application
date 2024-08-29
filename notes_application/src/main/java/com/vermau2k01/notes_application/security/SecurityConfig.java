@@ -5,12 +5,17 @@ import com.vermau2k01.notes_application.entity.Role;
 import com.vermau2k01.notes_application.entity.User;
 import com.vermau2k01.notes_application.repository.RoleRepository;
 import com.vermau2k01.notes_application.repository.UserRepository;
+import com.vermau2k01.notes_application.security.jwt.AuthEntryPointJwt;
+import com.vermau2k01.notes_application.security.jwt.AuthTokenFilter;
+import com.vermau2k01.notes_application.security.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,6 +24,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import java.time.LocalDate;
@@ -31,7 +37,11 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    private final UserDetailsService userDetailsService;
+    private final UserDetailsServiceImpl userDetailsService;
+
+    private final AuthTokenFilter authTokenFilter;
+    private final AuthEntryPointJwt unauthorizedHandler;
+    private final AuthenticationConfiguration authenticationConfiguration;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -42,7 +52,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/csrf").permitAll()
+                        .requestMatchers("/auth/public/**").permitAll()
                         .anyRequest().authenticated())
+                .exceptionHandling(e->e.authenticationEntryPoint(unauthorizedHandler))
+                .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(withDefaults())
                 .httpBasic(withDefaults());
 
@@ -53,6 +66,11 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager() throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
