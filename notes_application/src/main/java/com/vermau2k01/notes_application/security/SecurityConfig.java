@@ -41,15 +41,15 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .ignoringRequestMatchers("/auth/public/**"))
-                .authorizeHttpRequests(req -> req
+               .authorizeHttpRequests(req -> req
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/csrf").permitAll()
                         .requestMatchers("/auth/public/**").permitAll()
-                        .anyRequest().authenticated())
+                        .anyRequest().permitAll())
                 .exceptionHandling(e->e.authenticationEntryPoint(unauthorizedHandler))
                 .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .formLogin(withDefaults())
-                .httpBasic(withDefaults());
+                .formLogin(withDefaults());
+                //.httpBasic(withDefaults());
 
         return http.build();
     }
