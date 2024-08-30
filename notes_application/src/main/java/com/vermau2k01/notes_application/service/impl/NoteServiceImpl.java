@@ -2,6 +2,7 @@ package com.vermau2k01.notes_application.service.impl;
 
 import com.vermau2k01.notes_application.entity.Notes;
 import com.vermau2k01.notes_application.repository.NotesRepository;
+import com.vermau2k01.notes_application.service.AuditService;
 import com.vermau2k01.notes_application.service.NoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import java.util.List;
 public class NoteServiceImpl implements NoteService {
 
     private final NotesRepository notesRepository;
+    private final AuditService auditService;
 
     @Override
     public Notes createNoteForUser(String username, String content) {
@@ -22,6 +24,8 @@ public class NoteServiceImpl implements NoteService {
                 .content(content)
                 .build();
 
+        auditService.logNoteCreation(username, build);
+
         return notesRepository.save(build);
     }
 
@@ -30,11 +34,13 @@ public class NoteServiceImpl implements NoteService {
         Notes note = notesRepository.findById(noteId).orElseThrow(()
                 -> new RuntimeException("Note not found"));
         note.setContent(content);
+        auditService.logNoteUpdate(username, note);
         return notesRepository.save(note);
     }
 
     @Override
     public void deleteNoteForUser(String noteId, String username) {
+        auditService.logNoteDeletion(username, noteId);
         notesRepository.deleteById(noteId);
     }
 
