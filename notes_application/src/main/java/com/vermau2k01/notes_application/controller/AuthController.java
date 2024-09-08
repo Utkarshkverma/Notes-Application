@@ -7,6 +7,7 @@ import com.vermau2k01.notes_application.entity.User;
 import com.vermau2k01.notes_application.repository.RoleRepository;
 import com.vermau2k01.notes_application.repository.UserRepository;
 import com.vermau2k01.notes_application.security.jwt.JwtUtils;
+import com.vermau2k01.notes_application.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -42,6 +43,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final UserService userService;
 
     @PostMapping("/public/sign-in")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -159,6 +161,25 @@ public class AuthController {
                 .orElseThrow(()-> new RuntimeException("Error: User is not found."));
 
         return user.getUserName();
+    }
+
+    @PostMapping("/public/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
+     try{
+         userService.generatePasswordResetToken(email);
+         return ResponseEntity
+                 .status(HttpStatus
+                         .OK)
+                 .body(new MessageResponse("Password reset token generated successfully"));
+
+     }catch (Exception e) {
+         logger.error("Error: ", e);
+         return ResponseEntity
+                 .status(HttpStatus
+                         .INTERNAL_SERVER_ERROR)
+                 .body(e.getMessage());
+
+     }
     }
 
 

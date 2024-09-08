@@ -2,15 +2,21 @@ package com.vermau2k01.notes_application.service.impl;
 
 import com.vermau2k01.notes_application.dto.UserDTO;
 import com.vermau2k01.notes_application.entity.AppRole;
+import com.vermau2k01.notes_application.entity.PasswordResetToken;
 import com.vermau2k01.notes_application.entity.Role;
 import com.vermau2k01.notes_application.entity.User;
+import com.vermau2k01.notes_application.repository.PasswordResetTokenRepository;
 import com.vermau2k01.notes_application.repository.RoleRepository;
 import com.vermau2k01.notes_application.repository.UserRepository;
 import com.vermau2k01.notes_application.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +24,9 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    @Value("${spring.app.frontendUrl}")
+    private String frontendUrl;
 
 
     @Override
@@ -47,6 +56,25 @@ public class UserServiceImpl implements UserService {
                 .findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return convertToDto(user);
+
+    }
+
+    @Override
+    public void generatePasswordResetToken(String email) {
+        User user = userRepository
+                .findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String token = UUID.randomUUID().toString();
+        Instant expiryDate = Instant.now().plus(10, ChronoUnit.MINUTES);
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setToken(token);
+        resetToken.setExpiryDate(expiryDate);
+        resetToken.setUser(user);
+
+        passwordResetTokenRepository.save(resetToken);
+
+        String resetUrl = frontendUrl + "/reset-password?token="+token;
 
     }
 

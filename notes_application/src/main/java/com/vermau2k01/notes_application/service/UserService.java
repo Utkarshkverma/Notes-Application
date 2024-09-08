@@ -13,5 +13,7 @@ public interface UserService {
 
     UserDTO getUser(String userId);
 
+    void generatePasswordResetToken(String email);
+
 
 }
