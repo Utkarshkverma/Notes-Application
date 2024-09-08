@@ -9,6 +9,7 @@ import com.vermau2k01.notes_application.repository.PasswordResetTokenRepository;
 import com.vermau2k01.notes_application.repository.RoleRepository;
 import com.vermau2k01.notes_application.repository.UserRepository;
 import com.vermau2k01.notes_application.service.UserService;
+import com.vermau2k01.notes_application.utils.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailService emailService;
     @Value("${spring.app.frontendUrl}")
     private String frontendUrl;
 
@@ -75,6 +77,7 @@ public class UserServiceImpl implements UserService {
         passwordResetTokenRepository.save(resetToken);
 
         String resetUrl = frontendUrl + "/reset-password?token="+token;
+        emailService.sendPasswordResetEmail(email, resetUrl);
 
     }
 
