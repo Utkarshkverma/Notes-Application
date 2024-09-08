@@ -182,5 +182,26 @@ public class AuthController {
      }
     }
 
+    @PostMapping("/public/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam String token,
+                                           @RequestParam String password) {
+        try{
+
+            userService.resetPassword(token, password);
+            return ResponseEntity
+                    .status(HttpStatus
+                            .OK)
+                    .body(new MessageResponse("Password updated successfully"));
+
+        }catch (Exception e) {
+            logger.error("Error: ", e);
+            return ResponseEntity
+                    .status(HttpStatus
+                            .INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
+        }
+
+    }
+
 
 }

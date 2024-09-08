@@ -12,6 +12,7 @@ import com.vermau2k01.notes_application.service.UserService;
 import com.vermau2k01.notes_application.utils.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -27,6 +28,7 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final EmailService emailService;
+    private final PasswordEncoder passwordEncoder;
     @Value("${spring.app.frontendUrl}")
     private String frontendUrl;
 
@@ -79,6 +81,28 @@ public class UserServiceImpl implements UserService {
         String resetUrl = frontendUrl + "/reset-password?token="+token;
         emailService.sendPasswordResetEmail(email, resetUrl);
 
+    }
+
+    @Override
+    public void resetPassword(String token, String password) {
+        PasswordResetToken resetToken = passwordResetTokenRepository
+                .findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid password reset token"));
+
+        if (resetToken.getExpiryDate().isBefore(Instant.now())) {
+            throw new RuntimeException("Token has already been expired");
+        }
+
+        if(resetToken.isUsed()) {
+            throw new RuntimeException("Token has already been used");
+        }
+
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
+
+        resetToken.setUsed(true);
+        passwordResetTokenRepository.save(resetToken);
     }
 
     private UserDTO convertToDto(User user) {
